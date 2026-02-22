@@ -33,7 +33,20 @@ def bubble_sort(arr):
     # Hint: Use nested loops - outer loop for passes, inner loop for comparisons
     # Hint: Compare adjacent elements and swap if left > right
     
-    pass  # Delete this and write your code
+    n = len(arr)
+
+    for i in range(n):
+        swapped = False #stops if no swaps are made
+
+        for j in range(0, n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+                swapped = True
+
+        if not swapped:
+            break #Means the array is already sorted
+
+    return arr
 
 
 def selection_sort(arr):
@@ -55,7 +68,18 @@ def selection_sort(arr):
     # TODO: Implement selection sort
     # Hint: Find minimum element in unsorted portion, swap it with first unsorted element
     
-    pass  # Delete this and write your code
+    n = len(arr)
+
+    for i in range(n):
+        min_index = 1
+
+        for j in range(i + 1, n):
+            if arr[j] < arr[min_index]: #if next number is smaller than current then swap
+                min_index = j 
+
+        arr[i], arr[min_index]= arr[min_index], arr[i]
+
+    return arr
 
 
 def insertion_sort(arr):
@@ -77,7 +101,17 @@ def insertion_sort(arr):
     # TODO: Implement insertion sort
     # Hint: Start from second element, insert it into correct position in sorted portion
     
-    pass  # Delete this and write your code
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i - 1
+
+        while j >= 0 and arr[j] > key:
+            arr[j + 1] = arr[j]
+            j -= 1
+
+        arr[j + 1] = key
+
+    return arr
 
 
 def merge_sort(arr):
@@ -101,8 +135,31 @@ def merge_sort(arr):
     # Hint: Recursive case - split array in half, sort each half, merge sorted halves
     # Hint: You'll need a helper function to merge two sorted arrays
     
-    pass  # Delete this and write your code
+    if len(arr) <= 1:
+        return arr
+    
+    mid = len(arr) // 2
+    left_half = merge_sort(arr[:mid])
+    right_half = merge_sort(arr[mid:])
 
+    return merge(left_half, right_half)
+
+def merge(left_half, right_half):
+    merged = []
+    i = j = 0
+
+    while i < len(left_half) and j < len(right_half):
+        if left_half[i] <= right_half[j]: 
+            merged.append(left_half[i])
+            i += 1
+        else:
+            merged.append(right_half[j])
+            j += 1
+
+    merged.extend(left_half[i:])
+    merged.extend(right_half[j:])
+
+    return merged
 
 # ============================================================================
 # PART 2: STABILITY DEMONSTRATION
@@ -126,6 +183,9 @@ def demonstrate_stability():
         {"name": "Tool D", "price": 999, "original_position": 3},
         {"name": "Widget E", "price": 1999, "original_position": 4},
     ]
+
+    def extractPrices(products):
+        return [product["price"] for product in products]
     
     # TODO: Sort products by price using each algorithm
     # Hint: You'll need to modify your sorting functions to work with dictionaries
@@ -139,7 +199,46 @@ def demonstrate_stability():
         "insertion_sort": "Not tested",
         "merge_sort": "Not tested"
     }
-    
+
+    algorithms = {
+        "bubble_sort": bubble_sort,
+        "selection_sort": selection_sort,
+        "insertion_sort": insertion_sort,
+        "merge_sort": merge_sort
+    }
+
+    for name, algo in algorithms.items():
+        #creating a copy of the products list to sort
+        products_copy = products.copy()
+
+        #extracting the prices to sort
+        prices = extractPrices(products_copy)
+        #sorting prices with the current algorithm
+        sorted_prices = algo(prices.copy())
+
+        #rebuilding the sorted products list based on sorted prices
+        sorted_products = []
+        for price in sorted_prices:
+            for p in products_copy:
+                if p["price"] == price and p not in sorted_products:
+                    sorted_products.append(p)
+                    break
+        #checking if the order of products with the same price is maintained
+        stable = True
+
+        price_groups = {}
+        for p in products:
+            price_groups.setdefault(p["price"],[]).append(p["original_position"])
+
+        for price in price_groups:
+            original_order = price_groups[price]
+            new_order = [
+                p["original_position"] for p in sorted_products if p["price"] == price
+            ]
+            if original_order != new_order:
+                stable = False
+                break
+        results[name] = "Stable" if stable else "Unstable"
     # TODO: Test each algorithm and update results dictionary with "Stable" or "Unstable"
     
     return results
@@ -287,8 +386,8 @@ if __name__ == "__main__":
     
     # Uncomment these as you complete each part:
     
-    # test_sorting_correctness()
-    # benchmark_all_datasets()
-    # analyze_stability()
+    test_sorting_correctness()
+    benchmark_all_datasets()
+    analyze_stability()
     
     print("\n⚠ Uncomment the test functions in the main block to run benchmarks!")
